@@ -62,11 +62,9 @@ namespace Lookif.Layers.WebFramework.Api
         [HttpPost]
         public virtual async Task<ApiResult<TSelectDto>> Create(TDto dto, CancellationToken cancellationToken)
         {
-            var model = dto.ToEntity(Mapper);
-            model.InsertedDateTime = Time;
+            var model = dto.ToEntity(Mapper); 
             model.LastEditedDateTime = Time;
-            model.LastEditedUserId = UserId;
-            model.CreatorId = UserId;
+            model.LastEditedUserId = UserId; 
             try
             {
                 await Service.AddAsync(model, cancellationToken);
