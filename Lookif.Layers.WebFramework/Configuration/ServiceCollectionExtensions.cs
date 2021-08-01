@@ -27,9 +27,9 @@ namespace Lookif.Layers.WebFramework.Configuration
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddDbContext(this IServiceCollection services, IConfiguration configuration)
+        public static void AddDbContext<T>(this IServiceCollection services, IConfiguration configuration) where T : ApplicationDbContext
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<T>(options =>
             {
                 options
                     .UseSqlServer(configuration.GetConnectionString("SqlServer"));

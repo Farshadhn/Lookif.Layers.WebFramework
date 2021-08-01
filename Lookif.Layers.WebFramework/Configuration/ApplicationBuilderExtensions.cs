@@ -22,13 +22,13 @@ namespace Lookif.Layers.WebFramework.Configuration
             return app;
         }
 
-        public static IApplicationBuilder IntializeDatabase(this IApplicationBuilder app)
+        public static IApplicationBuilder IntializeDatabase<T>(this IApplicationBuilder app) where T  : ApplicationDbContext
         {
             Assert.NotNull(app, nameof(app));
 
             //Use C# 8 using variables
             using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
-            var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>(); //Service locator
+            var dbContext = scope.ServiceProvider.GetService<T>(); //Service locator
 
             //Dos not use Migrations, just Create Database with latest changes
             //dbContext.Database.EnsureCreated();
