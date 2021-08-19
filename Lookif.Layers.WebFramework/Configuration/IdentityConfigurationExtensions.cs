@@ -3,12 +3,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Lookif.Layers.Data;
 using Lookif.Layers.Core.MainCore.Identities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using System;
 
 namespace Lookif.Layers.WebFramework.Configuration
 {
     public static class IdentityConfigurationExtensions
     {
-        public static void AddCustomIdentity(this IServiceCollection services, IdentitySettings settings)
+        public static void AddCustomIdentity<T>(this IServiceCollection services, IdentitySettings settings)
+         where T : IdentityDbContext<User, Role, Guid>
         {
             services.AddIdentity<User, Role>(identityOptions =>
             {
@@ -31,7 +34,7 @@ namespace Lookif.Layers.WebFramework.Configuration
                 //identityOptions.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 //identityOptions.Lockout.AllowedForNewUsers = false;
             })
-            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddEntityFrameworkStores<T>()
             .AddDefaultTokenProviders();
         }
     }
