@@ -14,11 +14,11 @@ namespace Lookif.Layers.WebFramework.Api
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Message { get; set; }
 
-        public ApiResult(bool isSuccess, ApiResultStatusCode statusCode, string Message = null)
+        public ApiResult(bool isSuccess, ApiResultStatusCode statusCode, string message = null)
         {
             this.IsSuccess = isSuccess;
             StatusCode = statusCode;
-            Message = Message ?? statusCode.ToDisplay();
+            Message = message ?? statusCode.ToDisplay();
         }
 
         #region Implicit Operators
