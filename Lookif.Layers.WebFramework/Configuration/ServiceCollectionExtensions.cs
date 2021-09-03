@@ -19,15 +19,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Lookif.Layers.Data;
-using Lookif.Layers.Data.Contracts;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Lookif.Layers.Core.MainCore.Identities;
+using Lookif.Layers.Core.Infrastructure.Base.Repositories;
 
 namespace Lookif.Layers.WebFramework.Configuration
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddDbContext<T>(this IServiceCollection services, IConfiguration configuration) where T : ApplicationDbContext
+        public static void AddDbContext<T>(this IServiceCollection services, IConfiguration configuration) where T : IdentityDbContext<User,Role,Guid>
         {
             services.AddDbContext<T>(options =>
             {

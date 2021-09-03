@@ -1,16 +1,15 @@
 ﻿using Lookif.Library.Common;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
-using Lookif.Layers.Data;
-using Lookif.Layers.Core.MainCore.Identities;
+using Microsoft.Extensions.DependencyInjection; 
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System;
+using Lookif.Layers.Core.MainCore.Identities;
 
 namespace Lookif.Layers.WebFramework.Configuration
 {
     public static class IdentityConfigurationExtensions
     {
-        public static void AddCustomIdentity<T>(this IServiceCollection services, IdentitySettings settings)
+        public static void AddCustomIdentity<T>(this IServiceCollection services, IdentitySettings settings)  
          where T : IdentityDbContext<User, Role, Guid>
         {
             services.AddIdentity<User, Role>(identityOptions =>

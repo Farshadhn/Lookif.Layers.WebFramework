@@ -1,11 +1,13 @@
-﻿using Lookif.Library.Common.Utilities;
+﻿using Lookif.Layers.Core.Infrastructure.Base;
+using Lookif.Layers.Core.Infrastructure.Base.DataInitializer;
+using Lookif.Library.Common.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Lookif.Layers.Data;
-using Lookif.Layers.Service.DataInitializer;
+using System;
+using System.Linq;
 
 namespace Lookif.Layers.WebFramework.Configuration
 {
@@ -22,23 +24,18 @@ namespace Lookif.Layers.WebFramework.Configuration
             return app;
         }
 
-        public static IApplicationBuilder IntializeDatabase<T>(this IApplicationBuilder app) where T  : ApplicationDbContext
+        public static IApplicationBuilder IntializeDatabase<T>(this IApplicationBuilder app) 
         {
             Assert.NotNull(app, nameof(app));
 
             //Use C# 8 using variables
             using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
-            var dbContext = scope.ServiceProvider.GetService<T>(); //Service locator
 
-            //Dos not use Migrations, just Create Database with latest changes
-            //dbContext.Database.EnsureCreated();
-            //Applies any pending migrations for the context to the database like (Update-Database)
-            dbContext.Database.Migrate();
 
             var dataInitializers = scope.ServiceProvider.GetServices<IDataInitializer>();
-            foreach (var dataInitializer in dataInitializers)
-                dataInitializer.InitializeData();
-
+            var sss = scope.ServiceProvider.GetRequiredService<IDataBaseService>();
+            var databaserelatedService = scope.ServiceProvider.GetRequiredService<IDataBaseRelatedService>();
+            databaserelatedService.RefreshDatabase(dataInitializers.ToList());
             return app;
         }
     }
