@@ -65,15 +65,9 @@ namespace Lookif.Layers.WebFramework.Api
             var model = dto.ToEntity(Mapper); 
             model.LastEditedDateTime = Time;
             model.LastEditedUserId = UserId; 
-            try
-            {
+ 
                 await Service.AddAsync(model, cancellationToken);
-            }
-            catch (Exception e)
-            {
-
-                throw;
-            }
+            
 
 
             var resultDto = await Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
@@ -95,14 +89,9 @@ namespace Lookif.Layers.WebFramework.Api
             model.Id = id;
             model.LastEditedDateTime = Time;
             model.LastEditedUserId = UserId;
-            try
-            {
+            
                 await Service.UpdateAsync(model, cancellationToken);
-            }
-            catch (System.Exception e)
-            {
-                if (e.InnerException != null) throw e.InnerException;
-            }
+            
 
 
             var resultDto = await Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
