@@ -57,7 +57,6 @@ namespace Lookif.Layers.WebFramework.Api
         }
         [ProducesResponseType(StatusCodes.Status201Created)]
         [Produces("application/json")]
-        [Consumes("application/json")]
         [Authorize]
         [HttpPost]
         public virtual async Task<ApiResult<TSelectDto>> Create(TDto dto, CancellationToken cancellationToken)
@@ -79,7 +78,6 @@ namespace Lookif.Layers.WebFramework.Api
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [Produces("application/json")]
-        [Consumes("application/json")]
         [HttpPut("{id}")]
         public virtual async Task<ApiResult<TSelectDto>> Update(TKey id, TDto dto, CancellationToken cancellationToken)
         {
@@ -103,7 +101,6 @@ namespace Lookif.Layers.WebFramework.Api
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [Produces("application/json")]
-        [Consumes("application/json")]
         [HttpPut("{id}")]
         protected virtual async Task<ApiResult<TSelectDto>> UpdateByModel(TEntity model, TDto dto, CancellationToken cancellationToken)
         {

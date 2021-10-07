@@ -4,7 +4,7 @@ using Lookif.Layers.Core.MainCore.Base;
 using Lookif.Layers.Core.Infrastructure.Base.Repositories;
 using System;
 using System.Reflection;
-using Lookif.Layers.Core.Infrastructure.Base.Lookif.Library.Common;
+using Lookif.Layers.Core.Infrastructure.Base;
 
 namespace Lookif.Layers.WebFramework.Configuration
 {
