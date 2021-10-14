@@ -162,7 +162,7 @@ namespace Lookif.Layers.WebFramework.Configuration
                     OnTokenValidated = async context =>
                     {
                         var signInManager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<User>>();
-                        var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
+                        var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRelated>();
 
                         var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
                         if (claimsIdentity.Claims?.Any() != true)
@@ -173,13 +173,14 @@ namespace Lookif.Layers.WebFramework.Configuration
                             context.Fail("This token has no security stamp");
 
                         //Find user and token from database and perform your custom validation
-                        //ToDo string or int!! make your choice
+                        // string or int!! make your choice
                         var Id = claimsIdentity.GetUserId<string>();
-                         Guid.TryParse(Id,out Guid userId);
-                        var user = await userRepository.GetByIdAsync(context.HttpContext.RequestAborted, userId);
-
-                        //if (user.SecurityStamp != Guid.Parse(securityStamp))
-                        //    context.Fail("Token security stamp is not valid.");
+                        Guid.TryParse(Id,out Guid userId);
+                        //userRepository.
+                        var user = await userRepository.GetById(userId,context.HttpContext.RequestAborted);
+     
+                        if (Guid.TryParse(securityStamp,out _) && user.SecurityStamp != securityStamp)
+                            context.Fail("Token security stamp is not valid.");
 
                         var validatedUser = await signInManager.ValidateSecurityStampAsync(context.Principal);
                         if (validatedUser == null)

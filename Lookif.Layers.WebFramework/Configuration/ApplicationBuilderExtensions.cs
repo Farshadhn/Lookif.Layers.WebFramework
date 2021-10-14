@@ -24,7 +24,7 @@ namespace Lookif.Layers.WebFramework.Configuration
             return app;
         }
 
-        public static IApplicationBuilder IntializeDatabase<T>(this IApplicationBuilder app) 
+        public static IApplicationBuilder IntializeDatabase(this IApplicationBuilder app) 
         {
             Assert.NotNull(app, nameof(app));
 
@@ -33,7 +33,7 @@ namespace Lookif.Layers.WebFramework.Configuration
 
 
             var dataInitializers = scope.ServiceProvider.GetServices<IDataInitializer>();
-            var sss = scope.ServiceProvider.GetRequiredService<IDataBaseService>();
+            //var sss = scope.ServiceProvider.GetRequiredService<IDataBaseService>();
             var databaserelatedService = scope.ServiceProvider.GetRequiredService<IDataBaseRelatedService>();
             databaserelatedService.RefreshDatabase(dataInitializers.ToList());
             return app;
