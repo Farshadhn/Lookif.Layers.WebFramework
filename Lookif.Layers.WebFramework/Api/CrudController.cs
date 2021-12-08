@@ -34,7 +34,7 @@ namespace Lookif.Layers.WebFramework.Api
         [HttpGet]
         public virtual async Task<ApiResult<List<TSelectDto>>> Get(CancellationToken cancellationToken)
         {
-            var list = await Service.GetAll().Where(x => x.IsDeleted == false).ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
+            var list = await Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
 
             return Ok(list);
@@ -47,7 +47,7 @@ namespace Lookif.Layers.WebFramework.Api
         public virtual async Task<ApiResult<TSelectDto>> Get(TKey id, CancellationToken cancellationToken)
         {
 
-            var dto = await Service.GetAll().Where(x => x.IsDeleted == false).ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
+            var dto = await Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync(p => p.Id.Equals(id), cancellationToken);
 
             if (dto == null)
@@ -138,8 +138,7 @@ namespace Lookif.Layers.WebFramework.Api
                 .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
             model.LastEditedDateTime = Time;
-            model.LastEditedUserId = UserId;
-            model.IsDeleted = true;
+            model.LastEditedUserId = UserId; 
             await Service.DeleteAsync(model, cancellationToken);
             return Ok();
         }

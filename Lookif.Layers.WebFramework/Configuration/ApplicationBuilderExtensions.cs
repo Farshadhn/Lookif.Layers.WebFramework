@@ -33,7 +33,7 @@ namespace Lookif.Layers.WebFramework.Configuration
 
 
             var dataInitializers = scope.ServiceProvider.GetServices<IDataInitializer>();
-            //var sss = scope.ServiceProvider.GetRequiredService<IDataBaseService>();
+            
             var databaserelatedService = scope.ServiceProvider.GetRequiredService<IDataBaseRelatedService>();
             databaserelatedService.RefreshDatabase(dataInitializers.ToList());
             return app;
