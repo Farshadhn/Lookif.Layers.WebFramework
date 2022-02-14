@@ -24,7 +24,7 @@ namespace Lookif.Layers.WebFramework.Configuration
             return app;
         }
 
-        public static IApplicationBuilder IntializeDatabase(this IApplicationBuilder app) 
+        public static IApplicationBuilder IntializeDatabase(this IApplicationBuilder app, bool Do_Not_Use_Migration = false) 
         {
             Assert.NotNull(app, nameof(app));
 
@@ -35,7 +35,7 @@ namespace Lookif.Layers.WebFramework.Configuration
             var dataInitializers = scope.ServiceProvider.GetServices<IDataInitializer>();
             
             var databaserelatedService = scope.ServiceProvider.GetRequiredService<IDataBaseRelatedService>();
-            databaserelatedService.RefreshDatabase(dataInitializers.ToList());
+            databaserelatedService.RefreshDatabase(dataInitializers.ToList(), Do_Not_Use_Migration);
             return app;
         }
     }
