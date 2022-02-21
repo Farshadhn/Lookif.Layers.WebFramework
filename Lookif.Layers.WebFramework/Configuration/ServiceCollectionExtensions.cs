@@ -22,12 +22,13 @@ using Newtonsoft.Json.Converters;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Lookif.Layers.Core.MainCore.Identities;
 using Lookif.Layers.Core.Infrastructure.Base.Repositories;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Lookif.Layers.WebFramework.Configuration
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddDbContext<T>(this IServiceCollection services, IConfiguration configuration) where T : IdentityDbContext<User,Role,Guid>
+        public static void AddDbContext<T>(this IServiceCollection services, IConfiguration configuration) where T : IdentityDbContext<User, Role, Guid>
         {
             services.AddDbContext<T>(options =>
             {
@@ -58,7 +59,7 @@ namespace Lookif.Layers.WebFramework.Configuration
                 option.SerializerSettings.Converters.Add(new StringEnumConverter());
                 option.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 option.SerializerSettings.Formatting = Newtonsoft.Json.Formatting.Indented;
-                option.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore; 
+                option.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
             });
             services.AddSwaggerGenNewtonsoftSupport();
 
@@ -111,99 +112,122 @@ namespace Lookif.Layers.WebFramework.Configuration
             });
         }
 
-        public static void AddJwtAuthentication(this IServiceCollection services, JwtSettings jwtSettings)
+        public static AuthenticationBuilder AddJwtAuthentication(
+            this IServiceCollection services,
+            JwtSettings jwtSettings,
+            Action<AuthenticationOptions> authenticationOption = null,
+            Action<JwtBearerOptions> jwtBearerOptions = null
+            )
         {
-            services.AddAuthentication(options =>
+            AuthenticationBuilder authenticationBuilder = default;
+            if (authenticationOption is not null)
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
+                authenticationBuilder = services.AddAuthentication(authenticationOption);
+            }
+            else
             {
-                var secretKey = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
-                //ToDo Make it Secure
-                //var encryptionKey = Encoding.UTF8.GetBytes(jwtSettings.Encryptkey);
-
-                var validationParameters = new TokenValidationParameters
+                authenticationBuilder = services.AddAuthentication(options =>
                 {
-                    ClockSkew = TimeSpan.Zero, // default: 5 min
-                    RequireSignedTokens = true,
-
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(secretKey),
-
-                    RequireExpirationTime = true,
-                    ValidateLifetime = true,
-
-                    ValidateAudience = true, //default : false
-                    ValidAudience = jwtSettings.Audience,
-
-                    ValidateIssuer = true, //default : false
-                    ValidIssuer = jwtSettings.Issuer,
-
-                     //TokenDecryptionKey = new SymmetricSecurityKey(encryptionKey)
-                };
-
-                options.RequireHttpsMetadata = false;
-                options.SaveToken = true;
-                options.TokenValidationParameters = validationParameters;
-                options.Events = new JwtBearerEvents
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                });
+            }
+            if (jwtBearerOptions is not null)
+            {
+                authenticationBuilder = authenticationBuilder.AddJwtBearer(jwtBearerOptions);
+            }
+            else
+            {
+                authenticationBuilder = authenticationBuilder.AddJwtBearer(options =>
                 {
-                    OnAuthenticationFailed = context =>
+                    var secretKey = Encoding.UTF8.GetBytes(jwtSettings.SecretKey);
+                    //ToDo Make it Secure
+                    //var encryptionKey = Encoding.UTF8.GetBytes(jwtSettings.Encryptkey);
+
+                    var validationParameters = new TokenValidationParameters
                     {
-                        //var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(JwtBearerEvents));
-                        //logger.LogError("Authentication failed.", context.Exception);
+                        ClockSkew = TimeSpan.Zero, // default: 5 min
+                        RequireSignedTokens = true,
 
-                        if (context.Exception != null)
-                            throw new AppException(ApiResultStatusCode.UnAuthorized, "Authentication failed.", HttpStatusCode.Unauthorized, context.Exception, null);
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(secretKey),
 
-                        return Task.CompletedTask;
-                    },
-                    OnTokenValidated = async context =>
+                        RequireExpirationTime = true,
+                        ValidateLifetime = true,
+
+                        ValidateAudience = true, //default : false
+                        ValidAudience = jwtSettings.Audience,
+
+                        ValidateIssuer = true, //default : false
+                        ValidIssuer = jwtSettings.Issuer,
+
+                        //TokenDecryptionKey = new SymmetricSecurityKey(encryptionKey)
+                    };
+
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = validationParameters;
+                    options.Events = new JwtBearerEvents
                     {
-                        var signInManager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<User>>();
-                        var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRelated>();
+                        OnAuthenticationFailed = context =>
+                        {
+                            //var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(JwtBearerEvents));
+                            //logger.LogError("Authentication failed.", context.Exception);
 
-                        var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
-                        if (claimsIdentity.Claims?.Any() != true)
-                            context.Fail("This token has no claims.");
+                            if (context.Exception != null)
+                                throw new AppException(ApiResultStatusCode.UnAuthorized, "Authentication failed.", HttpStatusCode.Unauthorized, context.Exception, null);
 
-                        var securityStamp = claimsIdentity.FindFirstValue(new ClaimsIdentityOptions().SecurityStampClaimType);
-                        if (!securityStamp.HasValue())
-                            context.Fail("This token has no security stamp");
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = async context =>
+                        {
+                            var signInManager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<User>>();
+                            var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRelated>();
 
-                        //Find user and token from database and perform your custom validation
-                        // string or int!! make your choice
-                        var Id = claimsIdentity.GetUserId<string>();
-                        Guid.TryParse(Id,out Guid userId);
-                        //userRepository.
-                        var user = await userRepository.GetById(userId,context.HttpContext.RequestAborted);
-     
-                        if (Guid.TryParse(securityStamp,out _) && user.SecurityStamp != securityStamp)
-                            context.Fail("Token security stamp is not valid.");
+                            var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
+                            if (claimsIdentity.Claims?.Any() != true)
+                                context.Fail("This token has no claims.");
 
-                        var validatedUser = await signInManager.ValidateSecurityStampAsync(context.Principal);
-                        if (validatedUser == null)
-                            context.Fail("Token security stamp is not valid.");
+                            var securityStamp = claimsIdentity.FindFirstValue(new ClaimsIdentityOptions().SecurityStampClaimType);
+                            if (!securityStamp.HasValue())
+                                context.Fail("This token has no security stamp");
 
-                        if (!user.IsActive)
-                            context.Fail("User is not active.");
+                            //Find user and token from database and perform your custom validation
+                            // string or int!! make your choice
+                            var Id = claimsIdentity.GetUserId<string>();
+                            Guid.TryParse(Id, out Guid userId);
+                            //userRepository.
+                            var user = await userRepository.GetById(userId, context.HttpContext.RequestAborted);
 
-                        await userRepository.UpdateLastLoginDateAsync(user, context.HttpContext.RequestAborted);
-                    },
-                    OnChallenge = context =>
-                    {
-                        //var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(JwtBearerEvents));
-                        //logger.LogError("OnChallenge error", context.Error, context.ErrorDescription);
+                            if (Guid.TryParse(securityStamp, out _) && user.SecurityStamp != securityStamp)
+                                context.Fail("Token security stamp is not valid.");
 
-                        if (context.AuthenticateFailure != null)
-                            throw new AppException(ApiResultStatusCode.UnAuthorized, "Authenticate failure.", HttpStatusCode.Unauthorized, context.AuthenticateFailure, null);
-                        throw new AppException(ApiResultStatusCode.UnAuthorized, "You are unauthorized to accLookif.Layers this resource.", HttpStatusCode.Unauthorized);
+                            var validatedUser = await signInManager.ValidateSecurityStampAsync(context.Principal);
+                            if (validatedUser == null)
+                                context.Fail("Token security stamp is not valid.");
 
-                        //return Task.CompletedTask;
-                    }
-                };
-            });
+                            if (!user.IsActive)
+                                context.Fail("User is not active.");
+
+                            await userRepository.UpdateLastLoginDateAsync(user, context.HttpContext.RequestAborted);
+                        },
+                        OnChallenge = context =>
+                        {
+                            //var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(JwtBearerEvents));
+                            //logger.LogError("OnChallenge error", context.Error, context.ErrorDescription);
+
+                            if (context.AuthenticateFailure != null)
+                                throw new AppException(ApiResultStatusCode.UnAuthorized, "Authenticate failure.", HttpStatusCode.Unauthorized, context.AuthenticateFailure, null);
+                            throw new AppException(ApiResultStatusCode.UnAuthorized, "You are unauthorized to accLookif.Layers this resource.", HttpStatusCode.Unauthorized);
+
+                            //return Task.CompletedTask;
+                        }
+                    };
+                });
+            }
+
+            return authenticationBuilder;
         }
 
         public static void AddCustomApiVersioning(this IServiceCollection services)
@@ -215,23 +239,7 @@ namespace Lookif.Layers.WebFramework.Configuration
                 options.DefaultApiVersion = new ApiVersion(1, 0); //v1.0 == v1
                 options.ReportApiVersions = true;
 
-                //ApiVersion.TryParse("1.0", out var version10);
-                //ApiVersion.TryParse("1", out var version1);
-                //var a = version10 == version1;
 
-                //options.ApiVersionReader = new QueryStringApiVersionReader("api-version");
-                // api/posts?api-version=1
-
-                //options.ApiVersionReader = new UrlSegmentApiVersionReader();
-                // api/v1/posts
-
-                //options.ApiVersionReader = new HeaderApiVersionReader(new[] { "Api-Version" });
-                // header => Api-Version : 1
-
-                //options.ApiVersionReader = new MediaTypeApiVersionReader()
-
-                //options.ApiVersionReader = ApiVersionReader.Combine(new QueryStringApiVersionReader("api-version"), new UrlSegmentApiVersionReader())
-                // combine of [querystring] & [urlsegment]
             });
         }
     }
