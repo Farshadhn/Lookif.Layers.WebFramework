@@ -17,7 +17,7 @@ namespace Lookif.Layers.WebFramework.CustomMapping
 
             services.AddAutoMapper(config =>
             {
-                config.AddCustomMappingProfile();
+                config.AddCustomMappingProfile(assemblies);
                 config.Advanced.BeforeSeal(configProvicer =>
                 {
                     configProvicer.CompileMappings();
