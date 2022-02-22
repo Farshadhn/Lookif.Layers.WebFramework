@@ -219,7 +219,7 @@ namespace Lookif.Layers.WebFramework.Configuration
 
                             if (context.AuthenticateFailure != null)
                                 throw new AppException(ApiResultStatusCode.UnAuthorized, "Authenticate failure.", HttpStatusCode.Unauthorized, context.AuthenticateFailure, null);
-                            throw new AppException(ApiResultStatusCode.UnAuthorized, "You are unauthorized to accLookif.Layers this resource.", HttpStatusCode.Unauthorized);
+                            throw new AppException(ApiResultStatusCode.UnAuthorized, "You are unauthorized to access this resource.", HttpStatusCode.Unauthorized);
 
                             //return Task.CompletedTask;
                         }
