@@ -23,11 +23,11 @@ namespace Lookif.Layers.WebFramework.Middlewares
         public async Task InvokeAsync(HttpContext context)
         {
             context.Request.Headers.Add("Time", DateTime.Now.ToString());
-            //context.Request.Headers.Add("User", context.User.Identity.GetUserId());
+            context.Request.Headers.Add("User", context?.User?.Identity?.GetUserId());
 
             await _next(context);
             context.Request.Headers.Remove("Time");
-            //context.Request.Headers.Remove("User");
+            context.Request.Headers.Remove("User");
         }
 
 
