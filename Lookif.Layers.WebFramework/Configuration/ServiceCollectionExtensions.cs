@@ -41,10 +41,11 @@ namespace Lookif.Layers.WebFramework.Configuration
             });
         }
 
-        public static void AddMinimalMvc(this IServiceCollection services)
+        public static IMvcBuilder AddMinimalMvc(this IServiceCollection services)
         {
             //https://github.com/aspnet/AspNetCore/blob/0303c9e90b5b48b309a78c2ec9911db1812e6bf3/src/Mvc/Mvc/src/MvcServiceCollectionExtensions.cs
-            services.AddControllers(options =>
+            services.AddSwaggerGenNewtonsoftSupport();
+            return services.AddControllers(options =>
             {
                 options.Filters.Add(new AuthorizeFilter()); //Apply AuthorizeFilter as global filter to all actions
 
@@ -61,45 +62,9 @@ namespace Lookif.Layers.WebFramework.Configuration
                 option.SerializerSettings.Formatting = Newtonsoft.Json.Formatting.Indented;
                 option.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
             });
-            services.AddSwaggerGenNewtonsoftSupport();
+          
 
-            #region Old way (We don't need this from ASP.NET Core 3.0 onwards)
-            ////https://github.com/aspnet/Mvc/blob/release/2.2/src/Microsoft.AspNetCore.Mvc/MvcServiceCollectionExtensions.cs
-            //services.AddMvcCore(options =>
-            //{
-            //    options.Filters.Add(new AuthorizeFilter());
-
-            //    //Like [ValidateAntiforgeryToken] attribute but dose not validatie for GET and HEAD http method
-            //    //You can ingore validate by using [IgnoreAntiforgeryToken] attribute
-            //    //Use this filter when use cookie 
-            //    //options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
-
-            //    //options.UseYeKeModelBinder();
-            //})
-            //.AddApiExplorer()
-            //.AddAuthorization()
-            //.AddFormatterMappings()
-            //.AddDataAnnotations()
-            //.AddJsonOptions(option =>
-            //{
-            //    //option.JsonSerializerOptions
-            //})
-            //.AddNewtonsoftJson(/*option =>
-            //{
-            //    option.SerializerSettings.Formatting = Newtonsoft.Json.Formatting.Indented;
-            //    option.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
-            //}*/)
-
-            ////Microsoft.AspNetCore.Mvc.Formatters.Json
-            ////.AddJsonFormatters(/*options =>
-            ////{
-            ////    options.Formatting = Newtonsoft.Json.Formatting.Indented;
-            ////    options.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
-            ////}*/)
-
-            //.AddCors()
-            //.SetCompatibilityVersion(CompatibilityVersion.Latest); //.SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-            #endregion
+          
         }
 
         public static void AddElmahCore(this IServiceCollection services, IConfiguration configuration, SiteSettings siteSetting)
