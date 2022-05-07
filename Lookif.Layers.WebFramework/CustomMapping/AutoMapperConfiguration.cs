@@ -18,21 +18,8 @@ namespace Lookif.Layers.WebFramework.CustomMapping
             services.AddAutoMapper(config =>
             {
                 config.AddCustomMappingProfile(assemblies);
-                config.Advanced.BeforeSeal(configProvicer =>
-                {
-                    configProvicer.CompileMappings();
-                });
             }, assemblies);
 
-            #region Deprecated (Use AutoMapper Instance instead)
-            //Mapper.Initialize(config =>
-            //{
-            //    config.AddCustomMappingProfile();
-            //});
-
-            ////Compile mapping after configuration to boost map speed
-            //Mapper.Configuration.CompileMappings();
-            #endregion
         }
 
         public static void AddCustomMappingProfile(this IMapperConfigurationExpression config)
