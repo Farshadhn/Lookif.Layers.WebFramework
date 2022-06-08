@@ -178,12 +178,11 @@ namespace Lookif.Layers.WebFramework.Configuration
 
                            var validatedUser = await signInManager.ValidateSecurityStampAsync(context.Principal);
                            if (validatedUser == null)
-                               context.Fail("Token security stamp is not valid.");
+                               context.Fail("Token security stamp is not valid. - ValidateSecurityStampAsync");
 
                            if (!user.IsActive)
                                context.Fail("User is not active.");
-
-                           await userRepository.UpdateLastLoginDateAsync(user, context.HttpContext.RequestAborted);
+                            
                        },
                        OnChallenge = context =>
                        {
