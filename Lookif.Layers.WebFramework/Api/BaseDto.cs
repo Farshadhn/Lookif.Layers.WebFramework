@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using Lookif.Layers.Core.MainCore.Base;
+using Lookif.Layers.Core.MainCore.Identities;
 using Lookif.Layers.WebFramework.CustomMapping;
 
 namespace Lookif.Layers.WebFramework.Api
@@ -12,7 +13,9 @@ namespace Lookif.Layers.WebFramework.Api
     {
         [Display(Name = "ردیف")]
         public TKey Id { get; set; }
-
+        public DateTime LastEditedDateTime { get; set; }
+        public Guid? LastEditedUserId { get; set; }
+        public User LastEditedUser { get; set; }
         public TEntity ToEntity(IMapper mapper)
         {
             return mapper.Map<TEntity>(CastToDerivedClass(mapper, this));

@@ -7,22 +7,22 @@
     <Product>WebFramework Related to "Lookif template".</Product>
     <Description>WebFramework Related to "Lookif template".</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <AssemblyVersion>2.0.0.2</AssemblyVersion>
+    <AssemblyVersion>2.0.1</AssemblyVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/Farshadhn/Lookif.Layers.WebFramework</RepositoryUrl>
-    <Version>2.0.0.2</Version>
-    <FileVersion>2.0.0.2</FileVersion>
+    <Version>2.0.1</Version>
+    <FileVersion>2.0.1</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.2.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="AutoMapper" Version="11.0.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
     <PackageReference Include="ElmahCore" Version="2.1.1" />
     <PackageReference Include="ElmahCore.Sql" Version="2.1.1" />
-    <PackageReference Include="Lookif.Layers.Core" Version="2.0.3.2" />
-    <PackageReference Include="Lookif.Library.Common" Version="2.1.0" />
+    <PackageReference Include="Lookif.Layers.Core" Version="2.0.3.5" />
+    <PackageReference Include="Lookif.Library.Common" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.4" />
@@ -34,5 +34,6 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.3.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="6.3.1" />
   </ItemGroup>
+
 
 </Project>
