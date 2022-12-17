@@ -11,10 +11,12 @@ using Lookif.Layers.Core.MainCore.Base;
 using Lookif.Layers.Core.Infrastructure.Base;
 using System;
 using Microsoft.AspNetCore.Http;
-using System.Linq.Expressions; 
+using System.Linq.Expressions;
+using System.Reflection;
+using Lookif.Library.Common.Exceptions;
 
 namespace Lookif.Layers.WebFramework.Api
-{ 
+{
     [ApiVersion("1")]
     public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseController<TService>
         where TDto : BaseDto<TDto, TEntity, TKey>, new()
@@ -40,7 +42,35 @@ namespace Lookif.Layers.WebFramework.Api
             return Ok(list);
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces("application/json")]
+        [HttpGet("{fieldName}")]
+        public virtual async Task<Dictionary<string, string>> GetDropDown(string fieldName, CancellationToken cancellationToken)
+        {
+            try
+            { 
+                var list =  Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
+                      .ToListAsync(cancellationToken);
+                Task.WaitAll(list);
+                Dictionary<string, string> rtn = new();
+                foreach (var item in list.Result)
+                {
+                    var idProp = item.GetType().GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
+                    var displayProp = item.GetType().GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
+                    rtn.Add(idProp?.GetValue(item, null)?.ToString(), displayProp?.GetValue(item, null)?.ToString());
 
+                }
+
+                return rtn is { Count :>1} ? rtn:throw new BadRequestException("Not found");
+
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
+
+        }
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces("application/json")]
         [HttpGet("{id}")]
@@ -61,12 +91,12 @@ namespace Lookif.Layers.WebFramework.Api
         [HttpPost]
         public virtual async Task<ApiResult<TSelectDto>> Create(TDto dto, CancellationToken cancellationToken)
         {
-            var model = dto.ToEntity(Mapper); 
+            var model = dto.ToEntity(Mapper);
             model.LastEditedDateTime = Time;
-            model.LastEditedUserId = UserId; 
- 
-                await Service.AddAsync(model, cancellationToken);
-            
+            model.LastEditedUserId = UserId;
+
+            await Service.AddAsync(model, cancellationToken);
+
 
 
             var resultDto = await Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
@@ -87,9 +117,9 @@ namespace Lookif.Layers.WebFramework.Api
             model.Id = id;
             model.LastEditedDateTime = Time;
             model.LastEditedUserId = UserId;
-            
-                await Service.UpdateAsync(model, cancellationToken);
-            
+
+            await Service.UpdateAsync(model, cancellationToken);
+
 
 
             var resultDto = await Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
@@ -138,7 +168,7 @@ namespace Lookif.Layers.WebFramework.Api
                 .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
             model.LastEditedDateTime = Time;
-            model.LastEditedUserId = UserId; 
+            model.LastEditedUserId = UserId;
             await Service.DeleteAsync(model, cancellationToken);
             return Ok();
         }

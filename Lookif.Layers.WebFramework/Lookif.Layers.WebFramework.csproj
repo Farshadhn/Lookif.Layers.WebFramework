@@ -11,8 +11,8 @@
     <NeutralLanguage>en</NeutralLanguage>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/Farshadhn/Lookif.Layers.WebFramework</RepositoryUrl>
-    <Version>2.0.1</Version>
-    <FileVersion>2.0.1</FileVersion>
+    <Version>2.1.0</Version>
+    <FileVersion>2.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

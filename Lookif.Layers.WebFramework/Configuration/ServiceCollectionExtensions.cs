@@ -29,15 +29,11 @@ namespace Lookif.Layers.WebFramework.Configuration
     public static class ServiceCollectionExtensions
     {
         public static void AddDbContext<T>(this IServiceCollection services, IConfiguration configuration) where T : IdentityDbContext<User, Role, Guid>
-        {
+        {  
             services.AddDbContext<T>(options =>
-            {
+            { 
                 options
                     .UseSqlServer(configuration.GetConnectionString("SqlServer"));
-                //Tips
-                //Automatic client evaluation is no longer supported. This event is no longer generated.
-                //This line is no longer needed.
-                //.ConfigureWarnings(warning => warning.Throw(RelationalEventId.QueryClientEvaluationWarning));
             });
         }
 
