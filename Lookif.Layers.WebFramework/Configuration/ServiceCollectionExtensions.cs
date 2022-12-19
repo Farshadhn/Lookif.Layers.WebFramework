@@ -1,16 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Net;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ElmahCore.Mvc;
+using ElmahCore.Sql;
+using Lookif.Layers.Core.Infrastructure.Base.Repositories;
+using Lookif.Layers.Core.MainCore.Identities;
 using Lookif.Library.Common;
 using Lookif.Library.Common.Exceptions;
 using Lookif.Library.Common.Utilities;
-using ElmahCore.Mvc;
-using ElmahCore.Sql;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -19,19 +17,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Lookif.Layers.Core.MainCore.Identities;
-using Lookif.Layers.Core.Infrastructure.Base.Repositories;
-using Microsoft.AspNetCore.Authentication;
+using System;
+using System.Linq;
+using System.Net;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Lookif.Layers.WebFramework.Configuration
 {
     public static class ServiceCollectionExtensions
     {
         public static void AddDbContext<T>(this IServiceCollection services, IConfiguration configuration) where T : IdentityDbContext<User, Role, Guid>
-        {  
-            services.AddDbContext<T>(options =>
-            { 
+        {
+            services.AddDbContextFactory<T>(options =>
+            {
                 options
                     .UseSqlServer(configuration.GetConnectionString("SqlServer"));
             });
@@ -58,9 +58,9 @@ namespace Lookif.Layers.WebFramework.Configuration
                 option.SerializerSettings.Formatting = Newtonsoft.Json.Formatting.Indented;
                 option.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
             });
-          
 
-          
+
+
         }
 
         public static void AddElmahCore(this IServiceCollection services, IConfiguration configuration, SiteSettings siteSetting)
@@ -82,7 +82,7 @@ namespace Lookif.Layers.WebFramework.Configuration
         {
 
             AuthenticationBuilder authenticationBuilder = default;
-            (Action<AuthenticationOptions> defaultAuthenticationOption, Action<JwtBearerOptions> defaultJWTBearerOptions)  =await FillDefaultValuesAsync();
+            (Action<AuthenticationOptions> defaultAuthenticationOption, Action<JwtBearerOptions> defaultJWTBearerOptions) = await FillDefaultValuesAsync();
             authenticationBuilder = authenticationOption switch
             {
 
@@ -100,7 +100,7 @@ namespace Lookif.Layers.WebFramework.Configuration
             return authenticationBuilder;
 
 
-            async Task<(Action<AuthenticationOptions> defaultAuthenticationOption, Action<JwtBearerOptions> defaultJWTBearerOptions)>  FillDefaultValuesAsync()
+            async Task<(Action<AuthenticationOptions> defaultAuthenticationOption, Action<JwtBearerOptions> defaultJWTBearerOptions)> FillDefaultValuesAsync()
             {
                 Action<AuthenticationOptions> defaultAuthenticationOption = options =>
                {
@@ -178,7 +178,7 @@ namespace Lookif.Layers.WebFramework.Configuration
 
                            if (!user.IsActive)
                                context.Fail("User is not active.");
-                            
+
                        },
                        OnChallenge = context =>
                        {
@@ -193,9 +193,9 @@ namespace Lookif.Layers.WebFramework.Configuration
                        }
                    };
                };
-               return (defaultAuthenticationOption, defaultJWTBearerOptions);
+                return (defaultAuthenticationOption, defaultJWTBearerOptions);
             }
-            
+
         }
 
 

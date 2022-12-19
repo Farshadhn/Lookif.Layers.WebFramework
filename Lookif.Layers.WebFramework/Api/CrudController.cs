@@ -61,7 +61,7 @@ namespace Lookif.Layers.WebFramework.Api
 
                 }
 
-                return rtn is { Count :>1} ? rtn:throw new BadRequestException("Not found");
+                return rtn is { Count :>0} ? rtn:throw new BadRequestException("Not found");
 
             }
             catch (Exception e)
