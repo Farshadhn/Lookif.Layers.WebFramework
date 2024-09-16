@@ -5,47 +5,46 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Lookif.Layers.WebFramework.Swagger
+namespace Lookif.Layers.WebFramework.Swagger;
+
+public class UnauthorizedResponsesOperationFilter : IOperationFilter
 {
-    public class UnauthorizedResponsesOperationFilter : IOperationFilter
+    private readonly bool _includeUnauthorizedAndForbiddenResponses;
+    private readonly string schemeName;
+
+    public UnauthorizedResponsesOperationFilter(bool includeUnauthorizedAndForbiddenResponses, string schemeName = "Bearer")
     {
-        private readonly bool _includeUnauthorizedAndForbiddenResponses;
-        private readonly string schemeName;
+        this._includeUnauthorizedAndForbiddenResponses = includeUnauthorizedAndForbiddenResponses;
+        this.schemeName = schemeName;
+    }
 
-        public UnauthorizedResponsesOperationFilter(bool includeUnauthorizedAndForbiddenResponses, string schemeName = "Bearer")
+    public void Apply(OpenApiOperation operation, OperationFilterContext context)
+    {
+        var filters = context.ApiDescription.ActionDescriptor.FilterDescriptors;
+        var metadta = context.ApiDescription.ActionDescriptor.EndpointMetadata;
+
+        var hasAnonymous = filters.Any(p => p.Filter is AllowAnonymousFilter) || metadta.Any(p => p is AllowAnonymousAttribute);
+        if (hasAnonymous) return;
+
+        var hasAuthorize = filters.Any(p => p.Filter is AuthorizeFilter) || metadta.Any(p => p is AuthorizeAttribute);
+        if (!hasAuthorize) return;
+
+        if (_includeUnauthorizedAndForbiddenResponses)
         {
-            this._includeUnauthorizedAndForbiddenResponses = includeUnauthorizedAndForbiddenResponses;
-            this.schemeName = schemeName;
+            operation.Responses.TryAdd("401", new OpenApiResponse { Description = "Unauthorized" });
+            operation.Responses.TryAdd("403", new OpenApiResponse { Description = "Forbidden" });
         }
 
-        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        operation.Security.Add(new OpenApiSecurityRequirement
         {
-            var filters = context.ApiDescription.ActionDescriptor.FilterDescriptors;
-            var metadta = context.ApiDescription.ActionDescriptor.EndpointMetadata;
-
-            var hasAnonymous = filters.Any(p => p.Filter is AllowAnonymousFilter) || metadta.Any(p => p is AllowAnonymousAttribute);
-            if (hasAnonymous) return;
-
-            var hasAuthorize = filters.Any(p => p.Filter is AuthorizeFilter) || metadta.Any(p => p is AuthorizeAttribute);
-            if (!hasAuthorize) return;
-
-            if (_includeUnauthorizedAndForbiddenResponses)
             {
-                operation.Responses.TryAdd("401", new OpenApiResponse { Description = "Unauthorized" });
-                operation.Responses.TryAdd("403", new OpenApiResponse { Description = "Forbidden" });
-            }
-
-            operation.Security.Add(new OpenApiSecurityRequirement
-            {
+                new OpenApiSecurityScheme
                 {
-                    new OpenApiSecurityScheme
-                    {
-                        Scheme = schemeName,
-                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "OAuth2" }
-                    },
-                    Array.Empty<string>() //new[] { "readAccLookif.Layers", "writeAccLookif.Layers" }
-                }
-            });
-        }
+                    Scheme = schemeName,
+                    Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "OAuth2" }
+                },
+                Array.Empty<string>() //new[] { "readAccLookif.Layers", "writeAccLookif.Layers" }
+            }
+        });
     }
 }

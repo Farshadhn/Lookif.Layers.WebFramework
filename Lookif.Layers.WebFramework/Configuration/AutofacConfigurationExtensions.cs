@@ -1,6 +1,4 @@
 ﻿using Autofac;
-using Lookif.Library.Common;
-using Lookif.Layers.Core.MainCore.Base;
 using Lookif.Layers.Core.Infrastructure.Base.Repositories;
 using System;
 using System.Reflection;

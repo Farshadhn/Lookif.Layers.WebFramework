@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
 
-namespace Lookif.Layers.WebFramework.CustomMapping
+namespace Lookif.Layers.WebFramework.CustomMapping;
+
+public interface IHaveCustomMapping
 {
-    public interface IHaveCustomMapping
-    {
-        void CreateMappings(Profile profile);
-    }
+    void CreateMappings(Profile profile);
 }

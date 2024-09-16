@@ -5,39 +5,38 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System;
 using Lookif.Layers.Core.MainCore.Identities;
 
-namespace Lookif.Layers.WebFramework.Configuration
+namespace Lookif.Layers.WebFramework.Configuration;
+
+public static class IdentityConfigurationExtensions
 {
-    public static class IdentityConfigurationExtensions
+    public static void AddCustomIdentity<T>(
+        this IServiceCollection services,
+        IdentitySettings settings,
+        Action<IdentityOptions> identityOptions = null
+        )
+     where T : IdentityDbContext<User, Role, Guid>
     {
-        public static void AddCustomIdentity<T>(
-            this IServiceCollection services,
-            IdentitySettings settings,
-            Action<IdentityOptions> identityOptions = null
-            )
-         where T : IdentityDbContext<User, Role, Guid>
+        if (identityOptions is not null)
         {
-            if (identityOptions is not null)
+            services.AddIdentity<User, Role>(identityOptions)
+                .AddEntityFrameworkStores<T>()
+                .AddDefaultTokenProviders();
+        }
+        else
+        {
+            services.AddIdentity<User, Role>(identityOptions =>
             {
-                services.AddIdentity<User, Role>(identityOptions)
-                    .AddEntityFrameworkStores<T>()
-                    .AddDefaultTokenProviders();
-            }
-            else
-            {
-                services.AddIdentity<User, Role>(identityOptions =>
-                {
-                    //Password Settings
-                    identityOptions.Password.RequireDigit = settings.PasswordRequireDigit;
-                    identityOptions.Password.RequiredLength = settings.PasswordRequiredLength;
-                    identityOptions.Password.RequireNonAlphanumeric = settings.PasswordRequireNonAlphanumic; //#@!
-                    identityOptions.Password.RequireUppercase = settings.PasswordRequireUppercase;
-                    identityOptions.Password.RequireLowercase = settings.PasswordRequireLowercase;
+                //Password Settings
+                identityOptions.Password.RequireDigit = settings.PasswordRequireDigit;
+                identityOptions.Password.RequiredLength = settings.PasswordRequiredLength;
+                identityOptions.Password.RequireNonAlphanumeric = settings.PasswordRequireNonAlphanumic; //#@!
+                identityOptions.Password.RequireUppercase = settings.PasswordRequireUppercase;
+                identityOptions.Password.RequireLowercase = settings.PasswordRequireLowercase;
 
-                    //UserName Settings
-                    identityOptions.User.RequireUniqueEmail = settings.RequireUniqueEmail;
+                //UserName Settings
+                identityOptions.User.RequireUniqueEmail = settings.RequireUniqueEmail;
 
-                }).AddEntityFrameworkStores<T>().AddDefaultTokenProviders();
-            }
+            }).AddEntityFrameworkStores<T>().AddDefaultTokenProviders();
         }
     }
 }
