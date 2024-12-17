@@ -7,6 +7,8 @@ using Lookif.Library.Common.Exceptions;
 using Lookif.Library.Common.Utilities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
@@ -144,8 +146,25 @@ public static class ServiceCollectionExtensions
                        //var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(JwtBearerEvents));
                        //logger.LogError("Authentication failed.", context.Exception);
 
-                       if (context.Exception != null)
-                           throw new AppException(ApiResultStatusCode.UnAuthorized, "Authentication failed.", HttpStatusCode.Unauthorized, context.Exception, null);
+
+                       var endpoint = context.HttpContext.GetEndpoint();
+                       if (endpoint != null)
+                       {
+                           var allowAnonymous = endpoint.Metadata
+                               .OfType<AllowAnonymousAttribute>()
+                               .Any();
+
+                           if (allowAnonymous)
+                           {
+                               // The endpoint is anonymous
+                               context.NoResult(); // Prevent further handling
+                           }
+                           else 
+                           {
+                               if (context.Exception != null)
+                                   throw new AppException(ApiResultStatusCode.UnAuthorized, "Authentication failed.", HttpStatusCode.Unauthorized, context.Exception, null);
+                           }
+                       }
 
                        return Task.CompletedTask;
                    },

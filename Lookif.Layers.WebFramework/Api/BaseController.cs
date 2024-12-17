@@ -16,7 +16,14 @@ namespace Lookif.Layers.WebFramework.Api;
 public class BaseController<TService> : ControllerBase
 {
     public TService Service => HttpContext.RequestServices.GetRequiredService<TService>();
-    public Guid UserId => Guid.Parse(HttpContext.User?.Identity?.GetUserId());
+    public Guid UserId =>
+        HttpContext.User switch
+        {
+            not null and ClaimsPrincipal user when user.Identity is not null && user.Identity.IsAuthenticated => Guid.Parse(user.Identity?.GetUserId()),
+            _ => Guid.Empty
+        }; 
+
+
     public string UserName => ((ClaimsIdentity)HttpContext.User.Identity).Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value;
 
     public DateTime Time => HttpContext.Request.Headers["Time"].ToString().ToDateTime();
