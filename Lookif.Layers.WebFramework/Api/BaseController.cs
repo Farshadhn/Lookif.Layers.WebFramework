@@ -22,8 +22,8 @@ public class BaseController<TService> : ControllerBase
             not null and ClaimsPrincipal user when user.Identity is not null && user.Identity.IsAuthenticated => Guid.Parse(user.Identity?.GetUserId()),
             _ => Guid.Empty
         }; 
-
-
+  
+ 
     public string UserName => ((ClaimsIdentity)HttpContext.User.Identity).Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value;
 
     public DateTime Time => HttpContext.Request.Headers["Time"].ToString().ToDateTime();
@@ -36,7 +36,12 @@ public class BaseController<TService> : ControllerBase
 [Route("api/v{version:apiVersion}/[controller]/[action]")]// api/v1/[controller]
 public class BaseController : ControllerBase
 {
-    public Guid UserId => Guid.Parse(HttpContext.User.Identity.GetUserId());
+    public Guid UserId =>
+        HttpContext.User switch
+        {
+            not null and ClaimsPrincipal user when user.Identity is not null && user.Identity.IsAuthenticated => Guid.Parse(user.Identity?.GetUserId()),
+            _ => Guid.Empty
+        };
 
     public DateTime Time => HttpContext.Request.Headers["Time"].ToString().ToDateTime();
     public IEnumerable<string> roles => ((ClaimsIdentity)HttpContext.User.Identity).Claims

@@ -7,12 +7,12 @@ using Lookif.Layers.WebFramework.CustomMapping;
 
 namespace Lookif.Layers.WebFramework.Api;
 
-public abstract class BaseDto<TDto, TEntity, TKey> : IHaveCustomMapping
+public abstract class BaseDto<TDto, TEntity, TKey> : ICustomMapping
     where TDto : class, new()
     where TEntity : class, IEntity<TKey>, new()
 {
     [Display(Name = "ردیف")]
-    public TKey Id { get; set; }
+    public TKey Id { get; set; } 
     public DateTime LastEditedDateTime { get; set; }
     public Guid? LastEditedUserId { get; set; }
     public User LastEditedUser { get; set; }

@@ -7,12 +7,12 @@
     <Product>WebFramework Related to "Lookif template".</Product>
     <Description>WebFramework Related to "Lookif template".</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <AssemblyVersion>3.0.0</AssemblyVersion>
+    <AssemblyVersion>3.1.1</AssemblyVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/Farshadhn/Lookif.Layers.WebFramework</RepositoryUrl>
-    <Version>3.1.0</Version>
-    <FileVersion>3.1.0</FileVersion>
+    <Version>3.1.1</Version>
+    <FileVersion>3.1.1</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +20,7 @@
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="ElmahCore" Version="2.1.2" />
     <PackageReference Include="ElmahCore.Sql" Version="2.1.2" />
-    <PackageReference Include="Lookif.Layers.Core" Version="3.0.0" />
+    <PackageReference Include="Lookif.Layers.Core" Version="3.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />

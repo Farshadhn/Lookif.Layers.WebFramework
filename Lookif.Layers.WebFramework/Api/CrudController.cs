@@ -13,7 +13,11 @@ using System;
 using Microsoft.AspNetCore.Http;
 using System.Linq.Expressions;
 using System.Reflection;
+using Lookif.Layers.Core.Model;
 using Lookif.Library.Common.Exceptions;
+using System.Runtime.CompilerServices;
+using System.Net;
+using Lookif.Layers.Core.Enums;
 
 namespace Lookif.Layers.WebFramework.Api;
 
@@ -25,18 +29,35 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
      where TService : IBaseService<TEntity, TKey>
 {
     protected readonly IMapper Mapper;
+    protected  List<string> Ignores = [];
 
-    public CrudController(IMapper mapper)
-    {
-
+   
+    public CrudController(IMapper mapper, ControllerExecutionEnum controllerExecution)
+    { 
         Mapper = mapper;
+        List<string> target = controllerExecution switch
+        {
+            ControllerExecutionEnum.Read => ["Delete", "UpdateByModel", "Update", "Create"],
+            ControllerExecutionEnum.CreateAndRead => ["Delete", "UpdateByModel", "Update"],
+            ControllerExecutionEnum.CreateAdnReadAndUpdate => ["Delete"],
+            ControllerExecutionEnum.Full => [],
+        };
+        Ignores.AddRange(target);
     }
+    private void IgnoreIfNeeded([CallerMemberName] string methodName ="")
+    {
+        if (Ignores.Contains(methodName))
+            throw new NotFoundException();
+
+    }
+
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces("application/json")]
     [HttpGet]
-    public virtual async Task<ApiResult<List<TSelectDto>>> Get(CancellationToken cancellationToken)
+    public virtual async Task<ApiResult<List<TSelectDto>>> Get([FromQuery] GetAllFilter filter,CancellationToken cancellationToken)
     {
-        var list = await Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
+        IgnoreIfNeeded();
+        var list = await Service.GetAll(filter).ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 
         return Ok(list);
@@ -49,11 +70,12 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
     {
         try
         {
-            var list = Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
+            IgnoreIfNeeded();
+            var list = await Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
                   .ToListAsync(cancellationToken);
-            Task.WaitAll(list);
+
             Dictionary<string, string> rtn = new();
-            foreach (var item in list.Result)
+            foreach (var item in list)
             {
                 var idProp = item.GetType().GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
                 var displayProp = item.GetType().GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
@@ -76,6 +98,7 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
     [HttpGet("{id}")]
     public virtual async Task<ApiResult<TSelectDto>> Get(TKey id, CancellationToken cancellationToken)
     {
+        IgnoreIfNeeded();
 
         var dto = await Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
             .SingleOrDefaultAsync(p => p.Id.Equals(id), cancellationToken);
@@ -87,10 +110,10 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
     }
     [ProducesResponseType(StatusCodes.Status201Created)]
     [Produces("application/json")]
-    [Authorize]
     [HttpPost]
     public virtual async Task<ApiResult<TSelectDto>> Create(TDto dto, CancellationToken cancellationToken)
     {
+        IgnoreIfNeeded();
         var model = dto.ToEntity(Mapper);
         model.LastEditedDateTime = Time;
         model.LastEditedUserId = UserId;
@@ -111,6 +134,7 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
     [HttpPut("{id}")]
     public virtual async Task<ApiResult<TSelectDto>> Update(TKey id, TDto dto, CancellationToken cancellationToken)
     {
+        IgnoreIfNeeded();
         var model = await Service.GetAll().Where(x => x.Id.Equals(id)).AsNoTracking().FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         model = dto.ToEntity(Mapper, model);
@@ -134,6 +158,7 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
     [HttpPut("{id}")]
     protected virtual async Task<ApiResult<TSelectDto>> UpdateByModel(TEntity model, TDto dto, CancellationToken cancellationToken)
     {
+        IgnoreIfNeeded();
         dto.Id = model.Id;
         model = dto.ToEntity(Mapper, model);
 
@@ -161,6 +186,7 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
     [HttpDelete("{id}")]
     public virtual async Task<ApiResult> Delete(TKey id, CancellationToken cancellationToken)
     {
+        IgnoreIfNeeded();
         var model = await Service
             .GetAll()
             .Where(x => x.Id.Equals(id))
@@ -172,6 +198,8 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
         await Service.DeleteAsync(model, cancellationToken);
         return Ok();
     }
+
+
     [NonAction]
     protected virtual async Task<ApiResult<TSelectDto>> ReturnData(TKey id, CancellationToken cancellationToken)
     {
@@ -203,10 +231,17 @@ public class CrudController<TDto, TSelectDto, TEntity, TService> : CrudControlle
     where TService : IBaseService<TEntity, Guid>
 {
     public CrudController(IMapper mapper)
-        : base(mapper)
+        : base(mapper,ControllerExecutionEnum.Full)
+    {
+    }
+    public CrudController(IMapper mapper,ControllerExecutionEnum controllerExecution)
+       : base(mapper, controllerExecution)
     {
     }
 }
+
+
+
 [ApiVersion("1")]
 public class CrudController<TDto, TEntity, TService> : CrudController<TDto, TDto, TEntity, TService, Guid>
     where TDto : BaseDto<TDto, TEntity, Guid>, new()
@@ -214,7 +249,11 @@ public class CrudController<TDto, TEntity, TService> : CrudController<TDto, TDto
     where TService : IBaseService<TEntity, Guid>
 {
     public CrudController(IMapper mapper)
-        : base(mapper)
+         : base(mapper, ControllerExecutionEnum.Full)
+    {
+    }
+    public CrudController(IMapper mapper, ControllerExecutionEnum controllerExecution)
+       : base(mapper, controllerExecution)
     {
     }
 }

@@ -29,7 +29,7 @@ public class ApiResult
 
     public static implicit operator ApiResult(UnauthorizedResult result)
     {
-        return new ApiResult(true, ApiResultStatusCode.UnAuthorized);
+        return new ApiResult(false, ApiResultStatusCode.UnAuthorized);
     }
 
     public static implicit operator ApiResult(BadRequestResult result)
@@ -79,7 +79,7 @@ public class ApiResult<TData> : ApiResult
     }
     public static implicit operator ApiResult<TData>(UnauthorizedResult result)
     {
-        return new ApiResult<TData>(true, ApiResultStatusCode.UnAuthorized, null);
+        return new ApiResult<TData>(false, ApiResultStatusCode.UnAuthorized, null);
     }
     public static implicit operator ApiResult<TData>(OkResult result)
     {

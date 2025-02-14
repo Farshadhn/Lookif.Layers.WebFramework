@@ -32,8 +32,8 @@ public static class AutoMapperConfiguration
         var allTypes = assemblies.SelectMany(a => a.ExportedTypes);
 
         var list = allTypes.Where(type => type.IsClass && !type.IsAbstract &&
-            type.GetInterfaces().Contains(typeof(IHaveCustomMapping)))
-            .Select(type => (IHaveCustomMapping)Activator.CreateInstance(type));
+            type.GetInterfaces().Contains(typeof(ICustomMapping)))
+            .Select(type => (ICustomMapping)Activator.CreateInstance(type));
 
         var profile = new CustomMappingProfile(list);
 

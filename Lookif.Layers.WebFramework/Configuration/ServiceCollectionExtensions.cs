@@ -7,8 +7,6 @@ using Lookif.Library.Common.Exceptions;
 using Lookif.Library.Common.Utilities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
@@ -46,7 +44,7 @@ public static class ServiceCollectionExtensions
         return services.AddControllers(options =>
         {
             options.Filters.Add(new AuthorizeFilter()); //Apply AuthorizeFilter as global filter to all actions
-
+           
             //Like [ValidateAntiforgeryToken] attribute but dose not validatie for GET and HEAD http method
             //You can ingore validate by using [IgnoreAntiforgeryToken] attribute
             //Use this filter when use cookie 
@@ -161,8 +159,8 @@ public static class ServiceCollectionExtensions
                            }
                            else 
                            {
-                               if (context.Exception != null)
-                                   throw new AppException(ApiResultStatusCode.UnAuthorized, "Authentication failed.", HttpStatusCode.Unauthorized, context.Exception, null);
+                       if (context.Exception != null)
+                           throw new AppException(ApiResultStatusCode.UnAuthorized, "Authentication failed.", HttpStatusCode.Unauthorized, context.Exception, null);
                            }
                        }
 

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Lookif.Layers.WebFramework.Api;
+using Newtonsoft.Json.Serialization;
 
 namespace Lookif.Layers.WebFramework.Middlewares;
 
@@ -112,7 +113,10 @@ public class CustomExceptionHandlerMiddleware
                 throw new InvalidOperationException("The response has already started, the http status code middleware will not be executed.");
 
             var result = new ApiResult(false, apiStatusCode, Message);
-            var json = JsonConvert.SerializeObject(result);
+            var json = JsonConvert.SerializeObject(result, new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
 
             context.Response.StatusCode = (int)httpStatusCode;
             context.Response.ContentType = "application/json";
