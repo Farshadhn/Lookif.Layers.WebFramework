@@ -29,11 +29,11 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
      where TService : IBaseService<TEntity, TKey>
 {
     protected readonly IMapper Mapper;
-    protected  List<string> Ignores = [];
+    protected List<string> Ignores = [];
 
-   
+
     public CrudController(IMapper mapper, ControllerExecutionEnum controllerExecution)
-    { 
+    {
         Mapper = mapper;
         List<string> target = controllerExecution switch
         {
@@ -44,7 +44,7 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
         };
         Ignores.AddRange(target);
     }
-    private void IgnoreIfNeeded([CallerMemberName] string methodName ="")
+    private void IgnoreIfNeeded([CallerMemberName] string methodName = "")
     {
         if (Ignores.Contains(methodName))
             throw new NotFoundException();
@@ -54,7 +54,7 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces("application/json")]
     [HttpGet]
-    public virtual async Task<ApiResult<List<TSelectDto>>> Get([FromQuery] GetAllFilter filter,CancellationToken cancellationToken)
+    public virtual async Task<ApiResult<List<TSelectDto>>> Get([FromQuery] GetAllFilter filter, CancellationToken cancellationToken)
     {
         IgnoreIfNeeded();
         var list = await Service.GetAll(filter).ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
@@ -63,6 +63,17 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
         return Ok(list);
     }
 
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Produces("application/json")]
+    [HttpGet]
+    public virtual async Task<ApiResult<List<TSelectDto>>> Get(CancellationToken cancellationToken)
+    {
+        IgnoreIfNeeded();
+        var list = await Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
+            .ToListAsync(cancellationToken);
+
+        return Ok(list);
+    }
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces("application/json")]
     [HttpGet("{fieldName}")]
@@ -231,10 +242,10 @@ public class CrudController<TDto, TSelectDto, TEntity, TService> : CrudControlle
     where TService : IBaseService<TEntity, Guid>
 {
     public CrudController(IMapper mapper)
-        : base(mapper,ControllerExecutionEnum.Full)
+        : base(mapper, ControllerExecutionEnum.Full)
     {
     }
-    public CrudController(IMapper mapper,ControllerExecutionEnum controllerExecution)
+    public CrudController(IMapper mapper, ControllerExecutionEnum controllerExecution)
        : base(mapper, controllerExecution)
     {
     }
