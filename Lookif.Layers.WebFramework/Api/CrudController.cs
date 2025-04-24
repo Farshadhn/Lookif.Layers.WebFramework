@@ -63,17 +63,7 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
         return Ok(list);
     }
 
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [Produces("application/json")]
-    [HttpGet]
-    public virtual async Task<ApiResult<List<TSelectDto>>> Get(CancellationToken cancellationToken)
-    {
-        IgnoreIfNeeded();
-        var list = await Service.GetAll().ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
-            .ToListAsync(cancellationToken);
 
-        return Ok(list);
-    }
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces("application/json")]
     [HttpGet("{fieldName}")]

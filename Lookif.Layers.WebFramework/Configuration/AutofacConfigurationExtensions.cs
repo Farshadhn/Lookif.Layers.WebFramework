@@ -27,12 +27,6 @@ namespace Lookif.Layers.WebFramework.Configuration
             //RegisterType > As > Liftetime
             containerBuilder.RegisterGeneric(RepositoryWithKey).As(typeof(IRepository<,>)).InstancePerLifetimeScope();
             containerBuilder.RegisterGeneric(Repository).As(typeof(IRepository<>)).InstancePerLifetimeScope();
-          //  containerBuilder.RegisterGeneric(Repository).As(typeof(IRepository<>)).InstancePerLifetimeScope();
-
-
-
-            //  containerBuilder.RegisterGeneric(Repository).As(typeof(IRepository<>)).InstancePerLifetimeScope(); 
-
             containerBuilder.RegisterAssemblyTypes(CommonAssembly, entitiesAssembly, dataAssembly, servicesAssembly, Lcore, Lservice)
                .AssignableTo<IScopedDependency>()
                .AsImplementedInterfaces()
