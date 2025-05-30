@@ -123,3 +123,53 @@ public class ApiResult<TData> : ApiResult
     }
     #endregion
 }
+
+public class PagedApiResult<TData> : ApiResult
+    where TData : class
+{
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public TData Data { get; set; }
+
+    public int PageNumber { get; set; }
+    public int PageSize { get; set; }
+    public int TotalCount { get; set; }
+    public int TotalPages { get; set; }
+    public bool HasPreviousPage => PageNumber > 1;
+    public bool HasNextPage => PageNumber < TotalPages;
+
+    public PagedApiResult(bool isSuccess, ApiResultStatusCode statusCode, TData data, int pageNumber, int pageSize, int totalCount, string message = null)
+        : base(isSuccess, statusCode, message)
+    {
+        Data = data;
+        PageNumber = pageNumber;
+        PageSize = pageSize;
+        TotalCount = totalCount;
+        TotalPages = (int)System.Math.Ceiling(totalCount / (double)pageSize);
+    }
+
+    #region Implicit Operators
+    public static implicit operator PagedApiResult<TData>(TData data)
+    {
+        return new PagedApiResult<TData>(true, ApiResultStatusCode.Success, data, 1, 10, 0);
+    }
+
+    public static implicit operator PagedApiResult<TData>(OkObjectResult result)
+    {
+        if (result.Value is PagedApiResult<TData> pagedResult)
+        {
+            return pagedResult;
+        }
+        return new PagedApiResult<TData>(true, ApiResultStatusCode.Success, (TData)result.Value, 1, 10, 0);
+    }
+
+    public static implicit operator PagedApiResult<TData>(BadRequestResult result)
+    {
+        return new PagedApiResult<TData>(false, ApiResultStatusCode.BadRequest, null, 1, 10, 0);
+    }
+
+    public static implicit operator PagedApiResult<TData>(NotFoundResult result)
+    {
+        return new PagedApiResult<TData>(false, ApiResultStatusCode.NotFound, null, 1, 10, 0);
+    }
+    #endregion
+}

@@ -60,8 +60,23 @@ public class ApiResultFilterAttribute : ActionFilterAttribute
         else if (context.Result is ObjectResult objectResult && objectResult.StatusCode == null
             && !(objectResult.Value is ApiResult))
         {
-            var apiResult = new ApiResult<object>(true, ApiResultStatusCode.Success, objectResult.Value);
-            context.Result = new JsonResult(apiResult) { StatusCode = objectResult.StatusCode };
+            if (objectResult.Value is IPagedList pagedList)
+            {
+                var apiResult = new PagedApiResult<object>(
+                    true,
+                    ApiResultStatusCode.Success,
+                    pagedList,
+                    pagedList.PageNumber,
+                    pagedList.PageSize,
+                    pagedList.TotalCount
+                );
+                context.Result = new JsonResult(apiResult) { StatusCode = objectResult.StatusCode };
+            }
+            else
+            {
+                var apiResult = new ApiResult<object>(true, ApiResultStatusCode.Success, objectResult.Value);
+                context.Result = new JsonResult(apiResult) { StatusCode = objectResult.StatusCode };
+            }
         }
 
         base.OnResultExecuting(context);
