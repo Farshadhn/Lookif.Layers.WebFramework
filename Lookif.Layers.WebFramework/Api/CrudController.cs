@@ -39,7 +39,7 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
         {
             ControllerExecutionEnum.Read => ["Delete", "UpdateByModel", "Update", "Create"],
             ControllerExecutionEnum.CreateAndRead => ["Delete", "UpdateByModel", "Update"],
-            ControllerExecutionEnum.CreateAdnReadAndUpdate => ["Delete"],
+            ControllerExecutionEnum.CreateAndReadAndUpdate => ["Delete"],
             ControllerExecutionEnum.Full => [],
         };
         Ignores.AddRange(target);
@@ -56,7 +56,6 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
     [HttpGet]
     public virtual async Task<ApiResult<List<TSelectDto>>> Get([FromQuery] GetAllFilter filter, CancellationToken cancellationToken)
     {
-        IgnoreIfNeeded();
         var list = await Service.GetAll(filter).ProjectTo<TSelectDto>(Mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 
@@ -117,7 +116,6 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
         IgnoreIfNeeded();
         var model = dto.ToEntity(Mapper);
         model.LastEditedDateTime = Time;
-        model.LastEditedUserId = UserId;
 
         await Service.AddAsync(model, cancellationToken);
 
@@ -141,7 +139,6 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
         model = dto.ToEntity(Mapper, model);
         model.Id = id;
         model.LastEditedDateTime = Time;
-        model.LastEditedUserId = UserId;
 
         await Service.UpdateAsync(model, cancellationToken);
 
@@ -164,7 +161,6 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
         model = dto.ToEntity(Mapper, model);
 
         model.LastEditedDateTime = Time;
-        model.LastEditedUserId = UserId;
         try
         {
             await Service.UpdateAsync(model, cancellationToken);
@@ -195,7 +191,6 @@ public class CrudController<TDto, TSelectDto, TEntity, TService, TKey> : BaseCon
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         model.LastEditedDateTime = Time;
-        model.LastEditedUserId = UserId;
         await Service.DeleteAsync(model, cancellationToken);
         return Ok();
     }

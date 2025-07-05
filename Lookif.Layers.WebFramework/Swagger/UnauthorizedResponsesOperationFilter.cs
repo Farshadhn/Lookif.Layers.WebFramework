@@ -43,7 +43,7 @@ public class UnauthorizedResponsesOperationFilter : IOperationFilter
                     Scheme = schemeName,
                     Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "OAuth2" }
                 },
-                Array.Empty<string>() //new[] { "readAccLookif.Layers", "writeAccLookif.Layers" }
+                Array.Empty<string>() //new[] { "readAccess.Layers", "writeAccess.Layers" }
             }
         });
     }

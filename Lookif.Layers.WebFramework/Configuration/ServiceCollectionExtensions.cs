@@ -1,7 +1,6 @@
 ﻿using ElmahCore.Mvc;
 using ElmahCore.Sql;
-using Lookif.Layers.Core.Infrastructure.Base.Repositories;
-using Lookif.Layers.Core.MainCore.Identities;
+using Lookif.Layers.Core.Infrastructure.Base.Repositories; 
 using Lookif.Library.Common;
 using Lookif.Library.Common.Exceptions;
 using Lookif.Library.Common.Utilities;
@@ -30,9 +29,12 @@ namespace Lookif.Layers.WebFramework.Configuration;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddDbContext<T>(this IServiceCollection services, IConfiguration configuration) where T : IdentityDbContext<User, Role, Guid>
+    public static void AddDbContext<TContext, TUser, TRole>(this IServiceCollection services, IConfiguration configuration)
+        where TRole : IdentityRole<Guid>
+        where TUser : IdentityUser<Guid>
+        where TContext : IdentityDbContext<TUser, TRole,Guid>
     {
-        services.AddDbContextFactory<T>(options =>
+        services.AddDbContextFactory<TContext>(options =>
         {
             options
                 .UseSqlServer(configuration.GetConnectionString("SqlServer"));
@@ -46,7 +48,7 @@ public static class ServiceCollectionExtensions
         return services.AddControllers(options =>
         {
             options.Filters.Add(new AuthorizeFilter()); //Apply AuthorizeFilter as global filter to all actions
-           
+
             //Like [ValidateAntiforgeryToken] attribute but dose not validatie for GET and HEAD http method
             //You can ingore validate by using [IgnoreAntiforgeryToken] attribute
             //Use this filter when use cookie 
@@ -75,12 +77,13 @@ public static class ServiceCollectionExtensions
         });
     }
 
-    public static async Task<AuthenticationBuilder> AddJwtAuthentication(
+    public static async Task<AuthenticationBuilder> AddJwtAuthentication<TUser>(
         this IServiceCollection services,
         JwtSettings jwtSettings,
         Action<AuthenticationOptions> authenticationOption = null,
         Action<JwtBearerOptions> jwtBearerOptions = null
-        )
+        ) 
+where TUser : IdentityUser<Guid>
     {
 
         AuthenticationBuilder authenticationBuilder = default;
@@ -159,10 +162,10 @@ public static class ServiceCollectionExtensions
                                // The endpoint is anonymous
                                context.NoResult(); // Prevent further handling
                            }
-                           else 
+                           else
                            {
-                       if (context.Exception != null)
-                           throw new AppException(ApiResultStatusCode.UnAuthorized, "Authentication failed.", HttpStatusCode.Unauthorized, context.Exception, null);
+                               if (context.Exception != null)
+                                   throw new AppException(ApiResultStatusCode.UnAuthorized, "Authentication failed.", HttpStatusCode.Unauthorized, context.Exception, null);
                            }
                        }
 
@@ -170,8 +173,8 @@ public static class ServiceCollectionExtensions
                    },
                    OnTokenValidated = async context =>
                    {
-                       var signInManager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<User>>();
-                       var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRelated>();
+                       var signInManager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<TUser>>();
+                       var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRelated<TUser>>();
 
                        var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
                        if (claimsIdentity.Claims?.Any() != true)
@@ -195,8 +198,7 @@ public static class ServiceCollectionExtensions
                        if (validatedUser == null)
                            context.Fail("Token security stamp is not valid. - ValidateSecurityStampAsync");
 
-                       if (!user.IsActive)
-                           context.Fail("User is not active.");
+                  
 
                    },
                    OnChallenge = context =>

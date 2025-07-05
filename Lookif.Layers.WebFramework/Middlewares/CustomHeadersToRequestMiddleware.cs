@@ -19,8 +19,8 @@ public class CustomHeadersToRequestMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        context.Request.Headers.Add("Time", DateTime.Now.ToString());
-        context.Request.Headers.Add("User", context?.User?.Identity?.GetUserId());
+        context.Request.Headers.Append("Time", DateTime.Now.ToString());
+        context.Request.Headers.Append("User", context?.User?.Identity?.GetUserId());
 
         await _next(context);
         context.Request.Headers.Remove("Time");

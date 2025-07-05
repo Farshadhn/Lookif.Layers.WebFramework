@@ -4,18 +4,17 @@ using AutoMapper;
 using Lookif.Layers.Core.MainCore.Base;
 using Lookif.Layers.Core.MainCore.Identities;
 using Lookif.Layers.WebFramework.CustomMapping;
+using Microsoft.AspNetCore.Identity;
 
 namespace Lookif.Layers.WebFramework.Api;
 
-public abstract class BaseDto<TDto, TEntity, TKey> : ICustomMapping
+public abstract class BaseDto<TDto, TEntity,  TKey> : ICustomMapping
     where TDto : class, new()
     where TEntity : class, IEntity<TKey>, new()
 {
     [Display(Name = "ردیف")]
-    public TKey Id { get; set; } 
-    public DateTime LastEditedDateTime { get; set; }
-    public Guid? LastEditedUserId { get; set; }
-    public User LastEditedUser { get; set; }
+    public TKey Id { get; set; }
+    public DateTime LastEditedDateTime { get; set; } 
     public TEntity ToEntity(IMapper mapper)
     {
         return mapper.Map<TEntity>(CastToDerivedClass(mapper, this));
@@ -31,7 +30,7 @@ public abstract class BaseDto<TDto, TEntity, TKey> : ICustomMapping
         return mapper.Map<TDto>(model);
     }
 
-    private TDto CastToDerivedClass(IMapper mapper, BaseDto<TDto, TEntity, TKey> baseInstance)
+    private TDto CastToDerivedClass(IMapper mapper, BaseDto<TDto, TEntity,  TKey> baseInstance)
     {
         return mapper.Map<TDto>(baseInstance);
     }
@@ -57,7 +56,7 @@ public abstract class BaseDto<TDto, TEntity, TKey> : ICustomMapping
     }
 }
 
-public abstract class BaseDto<TDto, TEntity> : BaseDto<TDto, TEntity, Guid>
+public abstract class BaseDto<TDto, TEntity> : BaseDto<TDto, TEntity,  Guid>
     where TDto : class, new()
     where TEntity : class, IEntity<Guid>, new()
 {
