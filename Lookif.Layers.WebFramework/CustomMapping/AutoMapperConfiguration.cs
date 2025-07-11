@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using AutoMapper;
@@ -29,14 +30,33 @@ public static class AutoMapperConfiguration
 
     public static void AddCustomMappingProfile(this IMapperConfigurationExpression config, params Assembly[] assemblies)
     {
-        var allTypes = assemblies.SelectMany(a => a.ExportedTypes);
+        try
+        {
+            IEnumerable<Type> source = assemblies.SelectMany(a => a.ExportedTypes);
 
-        var list = allTypes.Where(type => type.IsClass && !type.IsAbstract &&
-            type.GetInterfaces().Contains(typeof(ICustomMapping)))
-            .Select(type => (ICustomMapping)Activator.CreateInstance(type));
+            var haveCustomMappings = source
+                .Where(type => type.IsClass && !type.IsAbstract && type.GetInterfaces().Contains(typeof(ICustomMapping)))
+                .Select(type =>
+                {
+                    try
+                    {
+                        return (ICustomMapping)Activator.CreateInstance(type);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"❌ Failed to create instance of {type.FullName}: {ex.Message}");
+                        throw;
+                    }
+                })
+                .ToList(); // Materialize to catch errors immediately
 
-        var profile = new CustomMappingProfile(list);
-
-        config.AddProfile(profile);
+            CustomMappingProfile profile = new CustomMappingProfile(haveCustomMappings);
+            config.AddProfile(profile);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Fatal error in AddCustomMappingProfiles: {ex}");
+            throw;
+        }
     }
 }
